@@ -3,13 +3,14 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class LockB implements Lock
 {
+	//use atomic arrays because volatile variables cannot be placed into Java arrays
 	AtomicIntegerArray choosing_;
 	AtomicIntegerArray number_;
 	
 	public LockB(int num_threads)
 	{
-		choosing_ = new AtomicIntegerArray(num_threads);//boolean[num_threads];
-		number_ = new AtomicIntegerArray(num_threads);//int[num_threads];
+		choosing_ = new AtomicIntegerArray(num_threads);
+		number_ = new AtomicIntegerArray(num_threads);
 		for (int i = 0; i < num_threads; i++)
 		{
 			choosing_.set(i, 0);
