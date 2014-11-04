@@ -11,11 +11,6 @@ public class LockB implements Lock
 	{
 		choosing_ = new AtomicIntegerArray(num_threads);
 		number_ = new AtomicIntegerArray(num_threads);
-		for (int i = 0; i < num_threads; i++)
-		{
-			choosing_.set(i, 0);
-			number_.set(i, 0);
-		}
 	}
 
 	private int max()
