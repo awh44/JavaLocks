@@ -2,8 +2,8 @@ import java.util.Arrays;
 
 public class LockB implements Lock
 {
-	volatile boolean choosing_[];
-	volatile int number_[];
+	private volatile boolean choosing_[];
+	private volatile int number_[];
 	
 	public LockB(int num_threads)
 	{
