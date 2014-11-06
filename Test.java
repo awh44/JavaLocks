@@ -1,10 +1,15 @@
 public class Test implements Runnable
 {
-	int id_;
-	Lock lock_;
-	public Test(int id, Lock lock)
+	private int id_;
+	private static Lock lock_;
+	public Test(int id)//, Lock lock)
 	{
 		id_ = id;
+		//lock_ = lock;
+	}
+
+	public static void set_lock(Lock lock)
+	{
 		lock_ = lock;
 	}
 
