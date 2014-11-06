@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class LockB implements Lock
 {
 	private volatile boolean choosing_[];
@@ -30,9 +28,8 @@ public class LockB implements Lock
 		choosing_[thread_id] = true;
 		choosing_ = choosing_; //force the other threads to see that choosing_[thread_id] has updated
 		number_[thread_id] = max() + 1;
-		number_ = number_; //force the other threads to see that number_[thread_id] has updated
 		choosing_[thread_id] = false;
-		choosing_ = choosing_; //force the other threads to see that choosing_[thread_id] has updated
+		choosing_ = choosing_; //force the other threads to see that choosing_[thread_id] and number_[thread_id] have updated
 		
 		for (int i = 0; i < number_.length; i++)
 		{
