@@ -6,12 +6,16 @@ public class Aircraft implements Runnable
 	private static int time_unit_;
 	private static Lock lock_;
 	private static Random random_;
+	private static Lock waiting_lock_ = new LockC();
+	private static int waiting_planes_ = 0;
 
+	//Maximum and minimum number of time units for performing the actions
 	private static final int MIN_TAKEOFF = 5;
 	private static final int MAX_TAKEOFF = 10;
 	private static final int MIN_TOUCH_GO = 10;
 	private static final int MAX_TOUCH_GO = 12;
 	private static final int LANDING = 10;
+	private static final int MAX_FLY = 5;
 
 	private static String BEGIN_TAKEOFF_STRING = " is about to take off.";
 	private static String END_TAKEOFF_STRING = " took off.";
@@ -59,18 +63,38 @@ public class Aircraft implements Runnable
 	public void run()
 	{
 		takeoff();
+		fly();
 		touch_and_goes();
 		land();
 	}
 
 	private void takeoff()
 	{
+		waiting_lock_.lock(id_);
+		waiting_planes_++;
+		waiting_lock_.unlock(id_);
+
 		lock_.lock(id_);
-		int take_off_time = random_.nextInt(MAX_TAKEOFF - MIN_TAKEOFF + 1) + MIN_TAKEOFF;
+
+		waiting_lock_.lock(id_);
+		waiting_planes_--;
+		waiting_lock_.unlock(id_);
+
+
+		int takeoff_time;	
+		if (waiting_planes_ == 0)
+		{
+			takeoff_time = random_.nextInt(MAX_TAKEOFF - MIN_TAKEOFF + 1) + MIN_TAKEOFF;
+		}
+		else
+		{
+			takeoff_time = MIN_TAKEOFF;
+		}
+
 		log(id_, BEGIN_TAKEOFF_STRING);
 		try 
 		{
-			Thread.sleep(take_off_time * time_unit_);
+			Thread.sleep(takeoff_time * time_unit_);
 		}
 		catch (InterruptedException e)
 		{
@@ -79,18 +103,23 @@ public class Aircraft implements Runnable
 		lock_.unlock(id_);
 	}
 
+	private void fly()
+	{
+		try
+		{
+			Thread.sleep(random_.nextInt(MAX_FLY * time_unit_));
+		}
+		catch (InterruptedException e)
+		{
+		}
+	}
+
 	private void touch_and_goes()
 	{
 		for (int i = 0; i < touch_and_goes_; i++)
 		{
-			try
-			{
-				Thread.sleep(random_.nextInt(5));
-			}
-			catch (InterruptedException e)
-			{
-			}
 			touch_and_go();
+			fly();
 		}
 	}
 
