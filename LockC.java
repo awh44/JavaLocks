@@ -5,18 +5,18 @@ public class LockC implements Lock
 	private AtomicInteger common;
 	public LockC()
 	{
-		common = new AtomicInteger(0);
+		common = new AtomicInteger(-1);
 	}
 
 	@Override
 	public void lock(int thread_id)
 	{
-		while (!common.compareAndSet(0, thread_id)) {};
+		while (!common.compareAndSet(-1, thread_id)) {};
 	}
 
 	@Override
 	public void unlock(int thread_id)
 	{
-		common.set(0);
+		common.set(-1);
 	}
 }

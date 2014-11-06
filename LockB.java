@@ -3,24 +3,23 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class LockB implements Lock
 {
-	//use atomic arrays because volatile variables cannot be placed into Java arrays
-	AtomicIntegerArray choosing_;
-	AtomicIntegerArray number_;
+	volatile int choosing_[];
+	volatile int number_[];
 	
 	public LockB(int num_threads)
 	{
-		choosing_ = new AtomicIntegerArray(num_threads);
-		number_ = new AtomicIntegerArray(num_threads);
+		choosing_ = new int[num_threads];
+		number_ = new int[num_threads];
 	}
 
 	private int max()
 	{
-		int max = number_.get(0);
-		for (int i = 1; i < number_.length(); i++)
-		{
-			if (number_.get(i) > max)
+		int max = number_[0];
+		for (int i = 1; i < number_.length; i++)
+		{	
+			if (number_[i] > max)
 			{
-				max = number_.get(i);
+				max = number_[i];
 			}
 		}
 		return max;
@@ -29,24 +28,27 @@ public class LockB implements Lock
 	@Override
 	public void lock(int thread_id)
 	{
-		choosing_.set(thread_id, 1);
-		number_.set(thread_id, max() + 1);
-		choosing_.set(thread_id, 0);
-
-		for (int i = 0; i < number_.length(); i++)
+		choosing_[thread_id] = 1;
+		choosing_ = choosing_; //force the other threads to see that choosing_[i] has updated
+		number_[thread_id] = max() + 1;
+		choosing_[thread_id] = 0;
+		number_ = number_; //force the other threads to see that number_[i] and choosing_[i] have updated
+		
+		for (int i = 0; i < number_.length; i++)
 		{
 			if (i == thread_id)
 			{
 				continue;
 			}
-			while (choosing_.get(i) == 1) {};
-			while (!((number_.get(i) == 0) || ((number_.get(thread_id) < number_.get(i)) || ((number_.get(thread_id) == number_.get(i)) && (thread_id < i))))) {};
+			while (choosing_[i] == 1) {};
+			while (!((number_[i] == 0) || ((number_[thread_id] < number_[i]) || ((number_[thread_id] == number_[i]) && (thread_id < i))))) {};
 		}
 	}
 
 	@Override
 	public void unlock(int thread_id)
 	{
-		number_.set(thread_id, 0);
+		number_[thread_id] = 0;
+		number_ = number_; //force the other threads to see that number_[i] has updated
 	}
 }
