@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class Airport
+public class Main 
 {
 	static final int MAX_TOUCH_GO = 6; //so 5 touch and goes is the max possible
 	public static void main(String[] args)
@@ -13,10 +13,19 @@ public class Airport
 
 		int num_aircraft;
 		int time_unit;
+		Lock lock;
 		try
 		{
 			num_aircraft = Integer.parseInt(args[0]);
 			time_unit = Integer.parseInt(args[1]);
+			if ((args.length > 2) && (args[2].equals("C")))
+			{
+				lock = new LockC();
+			}
+			else
+			{
+				lock = new LockB(num_aircraft);
+			}
 		}
 		catch (NumberFormatException e)
 		{
@@ -27,7 +36,7 @@ public class Airport
 		Random rand = new Random();
 
 		Aircraft.set_time_unit(time_unit);
-		Aircraft.set_lock(new LockB(num_aircraft));
+		Aircraft.set_lock(lock);
 		Aircraft.set_random(rand);
 
 		Thread threads[] = new Thread[num_aircraft];
@@ -44,6 +53,7 @@ public class Airport
 
 		try
 		{
+			//wait on all of the planes to finish their training flights
 			for (int i = 0; i < num_aircraft; i++)
 			{
 				threads[i].join();
