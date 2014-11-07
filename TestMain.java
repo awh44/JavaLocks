@@ -1,4 +1,4 @@
-public class Main
+public class TestMain
 {
 	public static int THREADS = 10;
 
