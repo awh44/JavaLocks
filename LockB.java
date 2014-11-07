@@ -33,11 +33,15 @@ public class LockB implements Lock
 		
 		for (int i = 0; i < number_.length; i++)
 		{
+			//don't make the thread wait on itself
 			if (i == thread_id)
 			{
 				continue;
 			}
+
+			//make sure the thread isn't choosing its ticket
 			while (choosing_[i]) {};
+			//then wait for the other thread to not be waiting and/or finish in the critical section
 			while (!((number_[i] == 0) || ((number_[thread_id] < number_[i]) || ((number_[thread_id] == number_[i]) && (thread_id < i))))) {};
 		}
 	}
@@ -45,7 +49,9 @@ public class LockB implements Lock
 	@Override
 	public void unlock(int thread_id)
 	{
+		//indicate that the thread no longer wants the lock
 		number_[thread_id] = 0;
 		number_ = number_; //force the other threads to see that number_[thread_id] has updated
+		//also ensures that the "happens-before" property of locks is guaranteed
 	}
 }
