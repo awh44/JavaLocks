@@ -4,13 +4,12 @@ public class TestMain
 
 	public static void main(String[] args)
 	{
-		if (args.length < 1)
+		if (args.length < 2)
 		{
-			System.out.println("Please specify the type of lock as a command line argument.");
+			System.out.println("Please specify the type of lock (B or C) and test (count or print) as command line arguments.");
 			return;
 		}
 
-		Lock lock;
 		if (args[0].equals("B"))
 		{
 			Test.set_lock(new LockB(THREADS));
@@ -21,7 +20,17 @@ public class TestMain
 		}
 		else
 		{
-			System.out.println("That lock type does not exist.");
+			System.out.println("That is not a defined lock type.");
+			return;
+		}
+
+		if (args[1].equals("count"))
+		{
+			Test.set_as_count_test();
+		}
+		else if (!args[1].equals("print"))
+		{
+			System.out.println("That is not a defined test type.");
 			return;
 		}
 
@@ -43,5 +52,7 @@ public class TestMain
 				e.printStackTrace();
 			}
 		}
+
+		Test.print_n();
 	}
 }
