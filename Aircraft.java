@@ -4,7 +4,7 @@ public class Aircraft implements Runnable
 {
 	private static long start_time_;
 	private static int time_unit_;
-	private static Lock lock_;
+	private static Lock runway_lock_;
 	private static Random random_;
 	private static Lock waiting_lock_ = new LockC();
 	private static int waiting_planes_ = 0;
@@ -17,6 +17,7 @@ public class Aircraft implements Runnable
 	private static final int LANDING = 10;
 	private static final int MAX_FLY = 5;
 
+	//Strings used in the logging of messages by the planes
 	private static String BEGIN_TAKEOFF_STRING = " is about to take off.";
 	private static String END_TAKEOFF_STRING = " took off.";
 	private static String BEGIN_TOUCH_GO_STRING = " is beginning a touch and go.";
@@ -45,7 +46,7 @@ public class Aircraft implements Runnable
 
 	public static void set_lock(Lock lock)
 	{
-		lock_ = lock;
+		runway_lock_ = lock;
 	}
 
 	public static void set_random(Random random)
@@ -70,18 +71,24 @@ public class Aircraft implements Runnable
 
 	private void takeoff()
 	{
+		//indicate that the plane is waiting to take off
 		waiting_lock_.lock(id_);
 		waiting_planes_++;
 		waiting_lock_.unlock(id_);
 
-		lock_.lock(id_);
+		//Try to enter the runway, and wait until its free
+		runway_lock_.lock(id_);
 
+		//indicate that the plane is no longer waiting to take off
 		waiting_lock_.lock(id_);
 		waiting_planes_--;
 		waiting_lock_.unlock(id_);
 
 
-		int takeoff_time;	
+		//If there are no other planes waiting to take off, let the takeoff take a random amount of
+		//time between to take off, between a set min and max. Otherwise, force the plan to use the
+		//min amount of time.
+		int takeoff_time;
 		if (waiting_planes_ == 0)
 		{
 			takeoff_time = random_.nextInt(MAX_TAKEOFF - MIN_TAKEOFF + 1) + MIN_TAKEOFF;
@@ -94,17 +101,21 @@ public class Aircraft implements Runnable
 		log(id_, BEGIN_TAKEOFF_STRING);
 		try 
 		{
+			//wait for the specified time, until takeoff has occurred.
 			Thread.sleep(takeoff_time * time_unit_);
 		}
 		catch (InterruptedException e)
 		{
 		}
 		log(id_, END_TAKEOFF_STRING);
-		lock_.unlock(id_);
+
+		//indicate the plane is done with the runway
+		runway_lock_.unlock(id_);
 	}
 
 	private void fly()
 	{
+		//simply fly around for a random amount of time less than MAX_FLY time units
 		try
 		{
 			Thread.sleep(random_.nextInt(MAX_FLY * time_unit_));
@@ -116,6 +127,7 @@ public class Aircraft implements Runnable
 
 	private void touch_and_goes()
 	{
+		//perform all of the plane's required touch-and-goes
 		for (int i = 0; i < touch_and_goes_; i++)
 		{
 			touch_and_go();
@@ -125,32 +137,45 @@ public class Aircraft implements Runnable
 
 	private void touch_and_go()
 	{
-		lock_.lock(id_);
+		//perform a single touch_and_go by first trying to enter the runway and waiting for it to be
+		//available
+		runway_lock_.lock(id_);
+
+		//determine how long this touch-and-go will take, between a set max and min
 		int touch_go_time = random_.nextInt(MAX_TOUCH_GO - MIN_TOUCH_GO + 1) + MIN_TOUCH_GO;
+
 		log(id_, BEGIN_TOUCH_GO_STRING);
 		try
 		{
+			//wait for the specified number of time units, until the touch-and-go is complete
 			Thread.sleep(touch_go_time * time_unit_);
 		}
 		catch (InterruptedException e)
 		{
 		}
 		log(id_, END_TOUCH_GO_STRING);
-		lock_.unlock(id_);
+
+		//release the lock to show that the runway is free again
+		runway_lock_.unlock(id_);
 	}
 
 	private void land()
 	{
-		lock_.lock(id_);
+		//try to obtain the runway, and if it's not avaiable, wait for it
+		runway_lock_.lock(id_);
+
 		log(id_, BEGIN_LANDING_STRING);
 		try
 		{
+			//sleep for the number of time units it takes to land
 			Thread.sleep(LANDING * time_unit_);
 		}
 		catch (InterruptedException e)
 		{
 		}
 		log(id_, END_LANDING_STRING);
-		lock_.unlock(id_);
+
+		//indicate that the runway is free again by releasing the lock
+		runway_lock_.unlock(id_);
 	}
 }

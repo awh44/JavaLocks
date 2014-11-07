@@ -1,17 +1,17 @@
 simulate: compile-simulation
-	@java Airport ${PLANES} ${TIME}
+	@java Main ${PLANES} ${TIME}
 
-compile-simulation: Airport.java Aircraft.java Lock.java LockB.java LockC.java
-	@javac Airport.java Aircraft.java Lock.java LockB.java LockC.java
+compile-simulation: Main.java Aircraft.java Lock.java LockB.java LockC.java
+	@javac Main.java Aircraft.java Lock.java LockB.java LockC.java
 
 B-test: compile-test
-	@java Main B
+	@java TestMain B
 
 C-test: compile-test
-	@java Main C
+	@java TestMain C
 
-compile-test: Main.java Test.java Lock.java LockB.java LockC.java
-	@javac Main.java Test.java Lock.java LockB.java LockC.java
+compile-test: TestMain.java Test.java Lock.java LockB.java LockC.java
+	@javac TestMain.java Test.java Lock.java LockB.java LockC.java
 
 clean:
 	rm *.class

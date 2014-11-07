@@ -39,12 +39,16 @@ public class Main
 		Aircraft.set_lock(lock);
 		Aircraft.set_random(rand);
 
+		//create a thread for each Aircraft, which will have an id from 0 to num-aircraft - 1 and a
+		//random number of touch-and-goes
 		Thread threads[] = new Thread[num_aircraft];
 		for (int i = 0; i < num_aircraft; i++)
 		{
 			threads[i] = new Thread(new Aircraft(i, rand.nextInt(MAX_TOUCH_GO)));
 		}
 
+		//Let the aircraft class know that the simulation is beginning
+		//and then start all of the threads/planes
 		Aircraft.begin_simulation();
 		for (int i = 0; i < num_aircraft; i++)
 		{
@@ -61,7 +65,7 @@ public class Main
 		}
 		catch (InterruptedException e)
 		{
-			System.out.println("Main interrupted.");
+			System.out.println("Error: main interrupted.");
 		}
 	}
 }
